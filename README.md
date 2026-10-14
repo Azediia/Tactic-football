@@ -15,8 +15,14 @@ Pour récupérer la dernière version : `git pull`, puis relancer dans Godot.
 
 ## Contrôles actuels (prototype)
 
-- **Espace** : frapper le ballon
-- **R** : remettre le ballon au centre
+- **Espace** : pause tactique / reprise. Après une pause, un cooldown de 15 s de jeu empêche d'en refaire une tout de suite.
+- **Clic gauche** sur un joueur bleu : le sélectionner (anneau jaune).
+- **Clic gauche** sur le terrain, en pause : ajouter un point de passage au joueur sélectionné. Les points s'enchaînent.
+- **1 / 2 / 3** : allure des prochains points (marche, trot, sprint). La couleur du tracé indique l'allure.
+- **Clic droit**, en pause : effacer les ordres du joueur sélectionné.
+- **K** : frappe test du ballon. **R** : ballon au centre.
+
+L'équipe rouge est immobile pour l'instant (pas encore d'IA).
 
 ## Test automatique
 
