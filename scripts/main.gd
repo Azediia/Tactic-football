@@ -75,6 +75,7 @@ func _ready() -> void:
 	director.event_logged.connect(ui.add_event)
 	director.banner_requested.connect(ui.show_banner)
 	director.dead_ball_pause_requested.connect(_on_dead_ball_pause)
+	director.ball_stopped.connect(_on_dead_ball_pause)
 	director.freeze_requested.connect(_on_freeze)
 	director.full_time.connect(ui.show_end)
 
@@ -107,6 +108,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				set_allure(Player.Allure.SPRINT)
 			KEY_T:
 				cycle_time_scale()
+			KEY_P:
+				director.auto_pause_enabled = not director.auto_pause_enabled
 	elif event is InputEventMouseButton and event.pressed:
 		match event.button_index:
 			MOUSE_BUTTON_LEFT:

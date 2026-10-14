@@ -15,9 +15,9 @@ Pour récupérer la dernière version : `git pull`, puis relancer dans Godot.
 
 ## Comment jouer
 
-Un match de 10 minutes (2 mi-temps de 5), 5 contre 5. Tu diriges les **bleus** (à gauche, ils attaquent vers la droite). Les rouges sont gérés par l'IA, et tes joueurs sans ordre jouent en autonomie.
+Un match de 10 minutes (2 mi-temps de 5), 5 contre 5. Tu diriges les **bleus** (à gauche, ils attaquent vers la droite). Les rouges sont gérés par l'IA, et tes joueurs sans ordre jouent en autonomie. Seule exception : un joueur bleu qui reçoit le ballon sans ordre le garde 3 s au pied pour t'attendre, puis reprend la conduite seul.
 
-- **Pause tactique** (`Espace`) : le temps s'arrête, tu donnes tous les ordres que tu veux, puis tu reprends. Après une pause, il faut attendre 15 s de jeu avant la suivante. Les arrêts de jeu (coup d'envoi, touche, corner, sortie de but) offrent une pause gratuite.
+- **Pause tactique** (`Espace`) : le temps s'arrête, tu donnes tous les ordres que tu veux, puis tu reprends. Après une pause, il faut attendre 15 s de jeu avant la suivante. Les arrêts de jeu (coup d'envoi, touche, corner, sortie de but) offrent une pause gratuite. **Dès que le ballon est à l'arrêt** (porteur immobile, ballon qui finit sa course, gardien qui le tient), le jeu se met aussi en pause, sans cooldown. La pause ne se redéclenche qu'après que le ballon a de nouveau bougé. `P` active ou désactive cette pause automatique.
 - **Choisir un joueur** : clic sur un joueur bleu. Le menu à gauche affiche ses ordres possibles.
   - **Courir** : clics sur le terrain pour tracer sa course (points de passage). Choix de l'allure (marche, trot, sprint). Avec le ballon, le menu indique la sûreté de la conduite.
   - **Passer** : clic sur un coéquipier (passe dans les pieds) ou sur le terrain (passe en profondeur). Au sol ou aérienne, force réglable, effet à la molette.
@@ -27,7 +27,7 @@ Un match de 10 minutes (2 mi-temps de 5), 5 contre 5. Tu diriges les **bleus** (
 - Avant de valider une passe, un tir ou un tacle, une **infobulle** donne le pourcentage de réussite, les chances de critique et les risques (ex. adversaire sur la trajectoire).
 - Le **journal des jets** (en haut à droite) explique chaque résultat : `jet 34 / 74 : réussie`.
 
-Touches : `Espace` pause / reprise · `Échap` annuler la visée · `1 2 3` allures · `Molette` effet · `T` vitesse du temps (x1, x2, x4) · `Clic droit` effacer les ordres du joueur.
+Touches : `Espace` pause / reprise · `Échap` annuler la visée · `1 2 3` allures · `Molette` effet · `T` vitesse du temps (x1, x2, x4) · `P` pause auto quand le ballon est arrêté · `Clic droit` effacer les ordres du joueur.
 
 ## Règles de dés (résumé)
 

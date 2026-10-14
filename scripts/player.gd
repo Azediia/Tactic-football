@@ -59,6 +59,8 @@ var contact_lock := 0.0
 var touch_timer := 0.0
 var wait_time := 0.0
 var decision_timer := 0.0
+## Temps passé au pied du ballon sans ordre (l'équipe pilotée attend ses ordres avant de jouer seule).
+var hold_idle := 0.0
 var last_eval_shot := -1
 var pending_save: Dictionary = {}
 var dive: Dictionary = {}

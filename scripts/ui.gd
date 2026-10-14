@@ -192,7 +192,7 @@ func _build_bottom_row() -> HBoxContainer:
 	var keys := _panel(PANEL_BG, 12, 10)
 	keys.size_flags_vertical = Control.SIZE_SHRINK_END
 	row.add_child(keys)
-	var keys_label := _label("Espace  pause / reprise\nÉchap  annuler la visée\n1 2 3  marche, trot, sprint\nMolette  effet du ballon\nT  vitesse du temps\nClic droit  effacer les ordres", 13, MUTED)
+	var keys_label := _label("Espace  pause / reprise\nÉchap  annuler la visée\n1 2 3  marche, trot, sprint\nMolette  effet du ballon\nT  vitesse du temps\nP  pause auto (ballon arrêté)\nClic droit  effacer les ordres", 13, MUTED)
 	keys.add_child(keys_label)
 	var spacer_left := Control.new()
 	spacer_left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -581,7 +581,7 @@ func _refresh_pause_panel() -> void:
 		_pause_label.text = "EN DIRECT"
 		_cooldown_bar.value = 100.0 * (1.0 - main.pause_cooldown_left / Main.PAUSE_COOLDOWN)
 		_pause_sub.text = "Pause disponible" if cooldown_ready else "Prochaine pause dans %d s" % int(ceil(main.pause_cooldown_left))
-	_speed_label.text = "Vitesse du temps : x%d  (T)" % int(Main.TIME_SCALES[main.time_scale_index])
+	_speed_label.text = "Vitesse du temps : x%d  (T)\nPause auto, ballon arrêté : %s  (P)" % [int(Main.TIME_SCALES[main.time_scale_index]), "oui" if main.director.auto_pause_enabled else "non"]
 
 
 func _refresh_card() -> void:

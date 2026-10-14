@@ -15,6 +15,7 @@ func _initialize() -> void:
 	await physics_frame
 	director = main.director
 	director.ai_enabled = false
+	director.auto_pause_enabled = false
 
 	_test_dice()
 	_test_rules()
@@ -29,6 +30,8 @@ func _initialize() -> void:
 	await _test_tackle()
 	await _test_possession_clears_orders()
 	await _test_out_of_play()
+	await _test_auto_pause()
+	await _test_human_carrier_waits()
 	await _test_ui()
 	await _test_ai_match()
 
@@ -434,6 +437,59 @@ func _test_out_of_play() -> void:
 	_check(director.ball.holder != null and director.ball.holder.team == 1 and director.ball.holder.is_keeper, "sortie de but : le gardien relance")
 
 
+func _test_auto_pause() -> void:
+	print("Pause automatique, ballon arrêté")
+	_reset_scene()
+	director.auto_pause_enabled = true
+	var ball := director.ball
+	ball.global_position = Vector3(-10.0, Ball.RADIUS, 15.0)  # loin de tous les joueurs
+	ball.kick(director.player_at(1, 4), Vector3(8.0, 0.0, 0.0), 0.0)
+	await _frames(30)
+	_check(not main.paused, "pas de pause tant que le ballon roule")
+	var paused_at := -1
+	for i in 900:
+		await physics_frame
+		if main.paused:
+			paused_at = i
+			break
+	_check(paused_at >= 0, "le jeu se met en pause quand le ballon s'arrête (après %d images)" % paused_at)
+	_check(main.pause_kind == "dead_ball" and main.pause_cooldown_left == 0.0, "la pause est offerte (pas de cooldown)")
+	main.toggle_pause()
+	await _frames(240)
+	_check(not main.paused, "pas de nouvelle pause tant que le ballon ne bouge pas")
+	ball.kick(director.player_at(1, 4), Vector3(8.0, 0.0, 0.0), 0.0)
+	var again := false
+	for i in 900:
+		await physics_frame
+		if main.paused:
+			again = true
+			break
+	_check(again, "la pause se réarme quand le ballon a de nouveau bougé")
+	director.auto_pause_enabled = false
+	main.set_paused(false)
+	ball.kick(director.player_at(1, 4), Vector3(8.0, 0.0, 0.0), 0.0)
+	await _frames(600)
+	_check(not main.paused, "l'option peut désactiver la pause automatique")
+	director.auto_pause_enabled = false
+
+
+func _test_human_carrier_waits() -> void:
+	print("Porteur de l'équipe pilotée")
+	_reset_scene()
+	director.ai_enabled = true
+	director.human_team = 0
+	var carrier := director.player_at(0, 3)
+	carrier.position = Vector3(-25.0, 0.0, 17.0)
+	carrier.heading = Vector3.RIGHT
+	_give_ball(carrier)
+	await _frames(120)
+	_check(director.ball.holder == carrier and carrier.speed < 0.1, "sans ordre, le porteur bleu garde le ballon au pied")
+	await _frames(420)
+	_check(carrier.position.distance_to(Vector3(-25.0, 0.0, 17.0)) > 1.0 or director.ball.holder != carrier, "après 3 s sans ordre, il reprend le jeu seul")
+	director.ai_enabled = false
+	director.human_team = -1
+
+
 func _test_ui() -> void:
 	print("Interface")
 	_reset_scene()
@@ -471,6 +527,7 @@ func _test_ai_match() -> void:
 	print("Match complet (IA contre IA, 60 s)")
 	_reset_scene()
 	director.ai_enabled = true
+	director.human_team = -1
 	director.begin_kickoff(0)
 	director.clock = 0.0
 	var score_before: Array = director.score.duplicate()

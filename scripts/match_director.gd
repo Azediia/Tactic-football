@@ -8,11 +8,14 @@ signal banner_requested(title: String, subtitle: String)
 signal dead_ball_pause_requested
 signal freeze_requested(frozen: bool)
 signal full_time
+signal ball_stopped
 
 enum Phase { LIVE, GOAL, HALF_TIME, FULL_TIME }
 
 const HALF_DURATION := 300.0  # 5 minutes par mi-temps
 const AI_INTERVAL := 0.15
+## Un joueur de l'équipe pilotée garde le ballon ce temps sans ordre avant de jouer seul.
+const HUMAN_CARRIER_PATIENCE := 3.0
 ## Positions de départ (équipe 0, qui défend à gauche) : gardien, 2 défenseurs, 2 attaquants.
 const FORMATION := [
 	Vector3(-27.0, 0.0, 0.0),
@@ -37,11 +40,17 @@ var half := 1
 var phase := Phase.LIVE
 var possession_team := -1
 var ai_enabled := true
+## Équipe pilotée par le joueur (-1 : aucune, tout est géré par l'IA).
+var human_team := 0
+## Pause offerte dès que le ballon est à l'arrêt (réglable).
+var auto_pause_enabled := true
 
 var _world: Node3D
 var _dead_timer := 0.0
 var _ai_timer := 0.0
 var _next_kickoff_team := 0
+var _ball_still_time := 0.0
+var _auto_pause_armed := false
 
 
 func setup(world: Node3D, p_ball: Ball) -> void:
@@ -112,6 +121,7 @@ func _physics_process(delta: float) -> void:
 		_end_match()
 		return
 	_check_holder()
+	_watch_ball_stopped(delta)
 	_update_ball_interactions()
 	_update_keepers()
 	_check_out_of_play()
@@ -133,6 +143,24 @@ func tick_realtime(delta: float) -> void:
 			begin_kickoff(_next_kickoff_team)
 
 
+## Détecte un ballon à l'arrêt : une seule pause par arrêt. Elle ne se réarme que lorsque
+## le ballon a de nouveau bougé, pour ne pas bloquer le jeu en boucle.
+func _watch_ball_stopped(delta: float) -> void:
+	var speed := ball.linear_velocity.length()
+	if speed > 1.5:
+		_auto_pause_armed = true
+		_ball_still_time = 0.0
+	elif speed < 0.4:
+		_ball_still_time += delta
+		if _auto_pause_armed and _ball_still_time >= 0.4:
+			_auto_pause_armed = false
+			if auto_pause_enabled:
+				event_logged.emit("Ballon arrêté : pause offerte", "info")
+				ball_stopped.emit()
+	else:
+		_ball_still_time = 0.0
+
+
 # --- Possession ----------------------------------------------------------------------------
 
 func set_holder(player: Player) -> void:
@@ -145,6 +173,7 @@ func set_holder(player: Player) -> void:
 	ball.linear_velocity *= 0.2
 	player.touch_timer = 0.15
 	player.contact_lock = 0.0
+	player.hold_idle = 0.0
 	if player.is_keeper:
 		player.decision_timer = 1.2
 	if possession_team != -1 and possession_team != player.team:
@@ -495,6 +524,7 @@ func begin_kickoff(team: int) -> void:
 	possession_team = -1
 	set_holder(kicker)
 	possession_team = team
+	_auto_pause_armed = false
 	freeze_requested.emit(false)
 	banner_requested.emit("COUP D'ENVOI", "Les %s engagent" % TEAM_NAMES[team].to_lower())
 	dead_ball_pause_requested.emit()
@@ -528,6 +558,7 @@ func _restart(team: int, spot: Vector3, title: String, team_name: String) -> voi
 	taker.heading = Vector3(attack, 0.0, 0.0)
 	possession_team = team
 	set_holder(taker)
+	_auto_pause_armed = false
 	banner_requested.emit(title, "Remise en jeu : %s" % team_name.to_lower())
 	dead_ball_pause_requested.emit()
 
@@ -615,6 +646,11 @@ func _ai_keeper(p: Player) -> void:
 
 
 func _ai_carrier(p: Player) -> void:
+	if p.team == human_team and p.hold_idle < HUMAN_CARRIER_PATIENCE:
+		# Équipe pilotée : le porteur garde le ballon et attend les ordres du joueur.
+		p.hold_idle += AI_INTERVAL
+		p.ai_goal = null
+		return
 	if p.decision_timer > 0.0:
 		p.ai_goal = {"pos": p.position + p.heading * 3.0, "allure": Player.Allure.TROT, "final": false}
 		return
